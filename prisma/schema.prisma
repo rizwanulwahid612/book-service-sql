@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(uuid())
+  name             String
+  email            String            @unique
+  password         String
+  role             String // Values: 'admin' or 'customer'
+  contactNo        String
+  address          String
+  profileImg       String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  reviewAndRatings ReviewAndRating[]
+  Orders           Order[]
+}
+
+// Category Model
+model Category {
+  id        String   @id @default(uuid())
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  books     Book[]
+}
+
+// Book Model
+model Book {
+  id              String            @id @default(uuid())
+  title           String
+  author          String
+  price           Float
+  genre           String
+  publicationDate String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  categoryId      String
+  category        Category          @relation(fields: [categoryId], references: [id])
+  reviews         ReviewAndRating[]
+}
+
+// Review And Rating Model
+model ReviewAndRating {
+  id        String   @id @default(uuid())
+  review    String
+  rating    Int // Range: 1 - 5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  users     User     @relation(fields: [userId], references: [id])
+  bookId    String
+  books     Book     @relation(fields: [bookId], references: [id])
+}
+
+// Order Model
+model Order {
+  id           String        @id @default(uuid())
+  userId       String
+  users        User          @relation(fields: [userId], references: [id])
+  orderedBooks OrderedBook[]
+  status       String        @default("pending") // Values: 'pending', 'shipped', 'delivered'
+  createdAt    DateTime      @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+// OrderedBook Model
+model OrderedBook {
+  id        String   @id @default(uuid())
+  orderId   String
+  orders    Order    @relation(fields: [orderId], references: [id])
+  bookId    String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// enum statusContents {
+//   pending
+//   shipped
+//   delivered
+// }
